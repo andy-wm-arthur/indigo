@@ -872,10 +872,10 @@ func processOp(ctx context.Context, bs blockstore.Blockstore, op *mst.DiffOp, hy
 	}
 
 	switch op.Op {
-	case "add", "mut":
+	case mst.DiffAdd, mst.DiffMut:
 
 		kind := EvtKindCreateRecord
-		if op.Op == "mut" {
+		if op.Op == mst.DiffMut {
 			kind = EvtKindUpdateRecord
 		}
 
@@ -905,7 +905,7 @@ func processOp(ctx context.Context, bs blockstore.Blockstore, op *mst.DiffOp, hy
 		}
 
 		return outop, nil
-	case "del":
+	case mst.DiffDel:
 		return &RepoOp{
 			Kind:       EvtKindDeleteRecord,
 			Collection: parts[0],

@@ -11,11 +11,19 @@ import (
 
 type DiffOp struct {
 	Depth  int
-	Op     string
+	Op     OpType
 	Rpath  string
 	OldCid cid.Cid
 	NewCid cid.Cid
 }
+
+type OpType byte
+
+const (
+	DiffMut OpType = iota
+	DiffAdd
+	DiffDel
+)
 
 // TODO: this code isn't great, should be rewritten on top of the baseline datastructures once functional and correct
 func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) ([]*DiffOp, error) {
@@ -57,7 +65,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 				}
 
 				out = append(out, &DiffOp{
-					Op:     "mut",
+					Op:     DiffMut,
 					Rpath:  ef.Key,
 					OldCid: ef.Val,
 					NewCid: et.Val,
@@ -73,7 +81,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 
 			if ef.Key > et.Key {
 				out = append(out, &DiffOp{
-					Op:     "add",
+					Op:     DiffAdd,
 					Rpath:  et.Key,
 					NewCid: et.Val,
 				})
@@ -81,7 +89,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 				ixt++
 			} else {
 				out = append(out, &DiffOp{
-					Op:     "del",
+					Op:     DiffDel,
 					Rpath:  ef.Key,
 					OldCid: ef.Val,
 				})
@@ -122,7 +130,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 		e := fents[ixf]
 		if e.isLeaf() {
 			out = append(out, &DiffOp{
-				Op:     "del",
+				Op:     DiffDel,
 				Rpath:  e.Key,
 				OldCid: e.Val,
 			})
@@ -130,7 +138,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 		} else if e.isTree() {
 			if err := e.Tree.WalkLeavesFrom(ctx, "", func(key string, val cid.Cid) error {
 				out = append(out, &DiffOp{
-					Op:     "del",
+					Op:     DiffDel,
 					Rpath:  key,
 					OldCid: val,
 				})
@@ -147,7 +155,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 		e := tents[ixt]
 		if e.isLeaf() {
 			out = append(out, &DiffOp{
-				Op:     "add",
+				Op:     DiffAdd,
 				Rpath:  e.Key,
 				NewCid: e.Val,
 			})
@@ -155,7 +163,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 		} else if e.isTree() {
 			if err := e.Tree.WalkLeavesFrom(ctx, "", func(key string, val cid.Cid) error {
 				out = append(out, &DiffOp{
-					Op:     "add",
+					Op:     DiffAdd,
 					Rpath:  key,
 					NewCid: val,
 				})
@@ -192,7 +200,7 @@ func identityDiff(ctx context.Context, bs blockstore.Blockstore, root cid.Cid) (
 	var ops []*DiffOp
 	if err := tt.WalkLeavesFrom(ctx, "", func(key string, val cid.Cid) error {
 		ops = append(ops, &DiffOp{
-			Op:     "add",
+			Op:     DiffAdd,
 			Rpath:  key,
 			NewCid: val,
 		})

@@ -305,14 +305,14 @@ func diffMaps(a, b map[string]cid.Cid) []*DiffOp {
 		bv, ok := b[k]
 		if !ok {
 			out = append(out, &DiffOp{
-				Op:     "del",
+				Op:     DiffDel,
 				Rpath:  k,
 				OldCid: av,
 			})
 		} else {
 			if av != bv {
 				out = append(out, &DiffOp{
-					Op:     "mut",
+					Op:     DiffMut,
 					Rpath:  k,
 					OldCid: av,
 					NewCid: bv,
@@ -325,7 +325,7 @@ func diffMaps(a, b map[string]cid.Cid) []*DiffOp {
 		_, ok := a[k]
 		if !ok {
 			out = append(out, &DiffOp{
-				Op:     "add",
+				Op:     DiffAdd,
 				Rpath:  k,
 				NewCid: b[k],
 			})
