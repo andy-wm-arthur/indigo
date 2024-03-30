@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"sort"
 	"testing"
+	"unsafe"
 
 	"github.com/bluesky-social/indigo/util"
 	cid "github.com/ipfs/go-cid"
@@ -597,6 +598,13 @@ func BenchmarkDiffTrees(b *testing.B) {
 	}
 	if !compareDiffs(diffs, want) {
 		b.Fatal("diffs not equal")
+	}
+}
+
+func TestDiffOpSize(t *testing.T) {
+	n := unsafe.Sizeof(DiffOp{})
+	if n != 56 {
+		t.Fatal(fmt.Sprintf("expected DiffOp to be 56 bytes, was %d", n))
 	}
 }
 

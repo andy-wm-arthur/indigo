@@ -10,7 +10,7 @@ import (
 )
 
 type DiffOp struct {
-	Depth  int
+	Depth  int32
 	Op     OpType
 	Rpath  string
 	OldCid cid.Cid
