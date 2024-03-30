@@ -399,7 +399,7 @@ func (r *Repo) GetRecordBytes(ctx context.Context, rpath string) (cid.Cid, *[]by
 	return cc, &raw, nil
 }
 
-func (r *Repo) DiffSince(ctx context.Context, oldrepo cid.Cid) ([]*mst.DiffOp, error) {
+func (r *Repo) DiffSince(ctx context.Context, oldrepo cid.Cid) ([]mst.DiffOp, error) {
 	ctx, span := otel.Tracer("repo").Start(ctx, "DiffSince")
 	defer span.End()
 

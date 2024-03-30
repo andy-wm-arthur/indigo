@@ -285,7 +285,7 @@ func TestDiffMutationsBasic(t *testing.T) {
 	testMapDiffs(t, a, b)
 }
 
-func diffMaps(a, b map[string]cid.Cid) []*DiffOp {
+func diffMaps(a, b map[string]cid.Cid) []DiffOp {
 	var akeys, bkeys []string
 
 	for k := range a {
@@ -299,19 +299,19 @@ func diffMaps(a, b map[string]cid.Cid) []*DiffOp {
 	sort.Strings(akeys)
 	sort.Strings(bkeys)
 
-	var out []*DiffOp
+	var out []DiffOp
 	for _, k := range akeys {
 		av := a[k]
 		bv, ok := b[k]
 		if !ok {
-			out = append(out, &DiffOp{
+			out = append(out, DiffOp{
 				Op:     DiffDel,
 				Rpath:  k,
 				OldCid: av,
 			})
 		} else {
 			if av != bv {
-				out = append(out, &DiffOp{
+				out = append(out, DiffOp{
 					Op:     DiffMut,
 					Rpath:  k,
 					OldCid: av,
@@ -324,7 +324,7 @@ func diffMaps(a, b map[string]cid.Cid) []*DiffOp {
 	for _, k := range bkeys {
 		_, ok := a[k]
 		if !ok {
-			out = append(out, &DiffOp{
+			out = append(out, DiffOp{
 				Op:     DiffAdd,
 				Rpath:  k,
 				NewCid: b[k],
@@ -428,7 +428,7 @@ func testMapDiffs(t testing.TB, a, b map[string]string) {
 	}
 }
 
-func diffDiff(a, b []*DiffOp) {
+func diffDiff(a, b []DiffOp) {
 	var i, j int
 
 	for i < len(a) || j < len(b) {
@@ -473,7 +473,7 @@ func diffDiff(a, b []*DiffOp) {
 	}
 }
 
-func compareDiffs(a, b []*DiffOp) bool {
+func compareDiffs(a, b []DiffOp) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -490,7 +490,7 @@ func compareDiffs(a, b []*DiffOp) bool {
 	return true
 }
 
-func diffOpEq(aa, bb *DiffOp) bool {
+func diffOpEq(aa, bb DiffOp) bool {
 	if aa.Op != bb.Op || aa.Rpath != bb.Rpath || aa.NewCid != bb.NewCid || aa.OldCid != bb.OldCid {
 		return false
 	}
@@ -581,7 +581,7 @@ func BenchmarkDiffTrees(b *testing.B) {
 
 	b.ResetTimer()
 
-	var diffs []*DiffOp
+	var diffs []DiffOp
 	var err error
 	for i := 0; i < b.N; i++ {
 		diffs, err = DiffTrees(context.TODO(), bs, cida, cidb)

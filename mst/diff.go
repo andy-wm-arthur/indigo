@@ -26,7 +26,7 @@ const (
 )
 
 // TODO: this code isn't great, should be rewritten on top of the baseline datastructures once functional and correct
-func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) ([]*DiffOp, error) {
+func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) ([]DiffOp, error) {
 	cst := util.CborStore(bs)
 
 	if from == cid.Undef {
@@ -47,7 +47,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 	}
 
 	var ixf, ixt int
-	var out []*DiffOp
+	var out []DiffOp
 	for ixf < len(fents) && ixt < len(tents) {
 		ef := fents[ixf]
 		et := tents[ixt]
@@ -64,7 +64,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 					return nil, fmt.Errorf("hang on, why are these leaves equal?")
 				}
 
-				out = append(out, &DiffOp{
+				out = append(out, DiffOp{
 					Op:     DiffMut,
 					Rpath:  ef.Key,
 					OldCid: ef.Val,
@@ -80,7 +80,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 			// otherwise call it a deletion?
 
 			if ef.Key > et.Key {
-				out = append(out, &DiffOp{
+				out = append(out, DiffOp{
 					Op:     DiffAdd,
 					Rpath:  et.Key,
 					NewCid: et.Val,
@@ -88,7 +88,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 				// only walk forward the pointer that was 'behind'
 				ixt++
 			} else {
-				out = append(out, &DiffOp{
+				out = append(out, DiffOp{
 					Op:     DiffDel,
 					Rpath:  ef.Key,
 					OldCid: ef.Val,
@@ -129,7 +129,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 
 		e := fents[ixf]
 		if e.isLeaf() {
-			out = append(out, &DiffOp{
+			out = append(out, DiffOp{
 				Op:     DiffDel,
 				Rpath:  e.Key,
 				OldCid: e.Val,
@@ -137,7 +137,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 
 		} else if e.isTree() {
 			if err := e.Tree.WalkLeavesFrom(ctx, "", func(key string, val cid.Cid) error {
-				out = append(out, &DiffOp{
+				out = append(out, DiffOp{
 					Op:     DiffDel,
 					Rpath:  key,
 					OldCid: val,
@@ -154,7 +154,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 
 		e := tents[ixt]
 		if e.isLeaf() {
-			out = append(out, &DiffOp{
+			out = append(out, DiffOp{
 				Op:     DiffAdd,
 				Rpath:  e.Key,
 				NewCid: e.Val,
@@ -162,7 +162,7 @@ func DiffTrees(ctx context.Context, bs blockstore.Blockstore, from, to cid.Cid) 
 
 		} else if e.isTree() {
 			if err := e.Tree.WalkLeavesFrom(ctx, "", func(key string, val cid.Cid) error {
-				out = append(out, &DiffOp{
+				out = append(out, DiffOp{
 					Op:     DiffAdd,
 					Rpath:  key,
 					NewCid: val,
@@ -193,13 +193,13 @@ func nodeEntriesEqual(a, b *nodeEntry) bool {
 	return false
 }
 
-func identityDiff(ctx context.Context, bs blockstore.Blockstore, root cid.Cid) ([]*DiffOp, error) {
+func identityDiff(ctx context.Context, bs blockstore.Blockstore, root cid.Cid) ([]DiffOp, error) {
 	cst := util.CborStore(bs)
 	tt := LoadMST(cst, root)
 
-	var ops []*DiffOp
+	var ops []DiffOp
 	if err := tt.WalkLeavesFrom(ctx, "", func(key string, val cid.Cid) error {
-		ops = append(ops, &DiffOp{
+		ops = append(ops, DiffOp{
 			Op:     DiffAdd,
 			Rpath:  key,
 			NewCid: val,

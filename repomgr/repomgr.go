@@ -865,7 +865,7 @@ func (rm *RepoManager) ImportNewRepo(ctx context.Context, user models.Uid, repoD
 	return nil
 }
 
-func processOp(ctx context.Context, bs blockstore.Blockstore, op *mst.DiffOp, hydrateRecords bool) (*RepoOp, error) {
+func processOp(ctx context.Context, bs blockstore.Blockstore, op mst.DiffOp, hydrateRecords bool) (*RepoOp, error) {
 	parts := strings.SplitN(op.Rpath, "/", 2)
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("repo mst had invalid rpath: %q", op.Rpath)
